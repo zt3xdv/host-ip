@@ -19,7 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HostIpApp(viewModel: MainViewModel) {
+fun HostIpApp(
+    viewModel: MainViewModel,
+    onRequestPermissions: () -> Unit
+) {
     MaterialTheme {
         Column(
             modifier = Modifier
@@ -35,29 +38,22 @@ fun HostIpApp(viewModel: MainViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            IpRow(
-                title = "IP Wi-Fi",
-                value = viewModel.wifiIp.value
-            )
+            IpRow("IP Wi-Fi", viewModel.wifiIp.value)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            IpRow(
-                title = "Gateway Wi-Fi",
-                value = viewModel.gatewayIp.value
-            )
+            IpRow("Gateway Wi-Fi", viewModel.gatewayIp.value)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            IpRow(
-                title = "IP pública",
-                value = viewModel.publicIp.value
-            )
+            IpRow("IP pública", viewModel.publicIp.value)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { viewModel.refresh() },
+                onClick = {
+                    viewModel.refresh()
+                },
                 enabled = !viewModel.isLoading.value
             ) {
                 Text(
@@ -70,18 +66,30 @@ fun HostIpApp(viewModel: MainViewModel) {
             }
 
             viewModel.errorMessage.value?.let { error ->
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     backgroundColor = Color(0xFFFFE0E0)
                 ) {
-                    Text(
-                        text = error,
+                    Column(
                         modifier = Modifier.padding(16.dp),
-                        color = Color(0xFFB00020),
-                        fontSize = 14.sp
-                    )
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = error,
+                            color = Color(0xFFB00020),
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = onRequestPermissions
+                        ) {
+                            Text("Solicitar permisos")
+                        }
+                    }
                 }
             }
         }

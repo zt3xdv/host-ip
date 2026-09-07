@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
             viewModel.refresh()
         } else {
             viewModel.setError(
-                "Se necesita permiso de ubicación para consultar los datos Wi-Fi."
+                "Debes conceder permiso de ubicación para consultar la red Wi-Fi."
             )
         }
     }
@@ -64,11 +64,11 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
 
-        val hasPermission =
+        val permissionGranted =
             finePermission == PackageManager.PERMISSION_GRANTED ||
             coarsePermission == PackageManager.PERMISSION_GRANTED
 
-        if (hasPermission) {
+        if (permissionGranted) {
             viewModel.refresh()
         } else {
             permissionLauncher.launch(
