@@ -32,21 +32,21 @@ fun HostIpApp(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Información de red",
+                text = "Internet information",
                 fontSize = 24.sp
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            IpRow("IP Wi-Fi", viewModel.wifiIp.value)
+            IpRow("IP Wifi", viewModel.wifiIp.value)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            IpRow("Gateway Wi-Fi", viewModel.gatewayIp.value)
+            IpRow("Gateway Wifi", viewModel.gatewayIp.value)
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            IpRow("IP pública", viewModel.publicIp.value)
+            IpRow("Public IP", viewModel.publicIp.value)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -58,9 +58,9 @@ fun HostIpApp(
             ) {
                 Text(
                     text = if (viewModel.isLoading.value) {
-                        "Cargando..."
+                        "Loading..."
                     } else {
-                        "Actualizar"
+                        "Refresh"
                     }
                 )
             }
@@ -87,7 +87,7 @@ fun HostIpApp(
                         Button(
                             onClick = onRequestPermissions
                         ) {
-                            Text("Solicitar permisos")
+                            Text("Request Permisions")
                         }
                     }
                 }
