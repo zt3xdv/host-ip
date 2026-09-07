@@ -15,6 +15,23 @@ android {
         versionName "1.0"
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildFeatures {
+        compose true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion "1.5.3"
+    }
+
     signingConfigs {
         release {
             storeFile file(
@@ -32,18 +49,6 @@ android {
             minifyEnabled false
         }
     }
-
-    buildFeatures {
-        compose true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion "1.5.3"
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
 
 repositories {
@@ -58,4 +63,14 @@ dependencies {
     implementation "androidx.compose.material:material:1.4.3"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
