@@ -13,9 +13,9 @@ import java.net.URL
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
-    val wifiIp = mutableStateOf("Cargando...")
-    val gatewayIp = mutableStateOf("Cargando...")
-    val publicIp = mutableStateOf("Cargando...")
+    val wifiIp = mutableStateOf("Loading...")
+    val gatewayIp = mutableStateOf("Loading...")
+    val publicIp = mutableStateOf("Loading...")
     val errorMessage = mutableStateOf<String?>(null)
     val isLoading = mutableStateOf(false)
 
@@ -46,10 +46,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val wifiManager = context.getSystemService(
                         Context.WIFI_SERVICE
                     ) as? WifiManager
-                        ?: throw Exception("No se pudo obtener WifiManager")
+                        ?: throw Exception("Could not get WifiManager")
 
                     val wifiInfo = wifiManager.connectionInfo
-                        ?: throw Exception("No se pudo obtener la información Wi-Fi")
+                        ?: throw Exception("Could not get Wifi info")
 
                     val dhcpInfo = wifiManager.dhcpInfo
 
@@ -60,12 +60,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         wifiIp = if (ip != 0) {
                             formatIp(ip)
                         } else {
-                            "No conectado"
+                            "No connected"
                         },
                         gatewayIp = if (gateway != 0) {
                             formatIp(gateway)
                         } else {
-                            "No disponible"
+                            "No available"
                         },
                         error = null
                     )
@@ -73,7 +73,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     LocalNetworkResult(
                         wifiIp = "Error",
                         gatewayIp = "Error",
-                        error = "Error obteniendo datos Wi-Fi: ${
+                        error = "Error getting Wifi data: ${
                             exception.message ?: exception.javaClass.simpleName
                         }"
                     )
@@ -106,8 +106,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             publicIp.value = publicIpResult
 
             if (publicIpResult == "Error") {
-                val publicError = "Error obteniendo la IP pública. " +
-                        "Comprueba la conexión a Internet y el permiso INTERNET."
+                val publicError = "Error getting public ip. " +
+                        "Check your internet connection."
 
                 errorMessage.value = listOfNotNull(
                     errorMessage.value,
