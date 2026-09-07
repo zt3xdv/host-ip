@@ -3,45 +3,126 @@ package com.zt3xdv.hostip
 import android.app.Application
 import android.content.Context
 import android.net.wifi.WifiManager
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URL
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
-  val wifiIp = mutableStateOf("...")
-  val gatewayIp = mutableStateOf("...")
-  val publicIp = mutableStateOf("...")
-  init { refresh() }
-  fun refresh() {
-    viewModelScope.launch(Dispatchers.IO) {
-      try {
-        val ctx = getApplication<Application>().applicationContext
-        val wm = ctx.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val ipInt = wm.connectionInfo?.ipAddress ?: 0
-        val dhcp = wm.dhcpInfo?.gateway ?: 0
-        wifiIp.value = formatIp(ipInt)
-        gatewayIp.value = formatIp(dhcp)
-      } catch (e: Exception) {
-        wifiIp.value = "unknown"
-        gatewayIp.value = "unknown"
-      }
-      try {
-        val ip = URL("https://api.ipify.org").readText().trim()
-        publicIp.value = if (ip.isEmpty()) "unknown" else ip
-      } catch (e: Exception) {
-        publicIp.value = "unknown"
-      }
+
+    val wifiIp = mutableStateOf("Cargando...")
+    val gatewayIp = mutableStateOf("Cargando...")
+    val publicIp = mutableStateOf("Cargando...")
+    val errorMessage = mutableStateOf<String?>(null)
+    val isLoading = mutableStateOf(false)
+
+    init {
+        refresh()
     }
-  }
-  private fun formatIp(ip: Int): String {
-    return listOf(
-      ip and 0xff,
-      ip shr 8 and 0xff,
-      ip shr 16 and 0xff,
-      ip shr 24 and 0xff
-    ).joinToString(".")
-  }
+
+    fun refresh() {
+        if (isLoading.value) return
+
+        viewModelScope.launch {
+            isLoading.value = true
+            errorMessage.value = null
+
+            val localResult = withContext(Dispatchers.IO) {
+                try {
+                    val context = getApplication<Application>()
+                        .applicationContext
+
+                    val wifiManager = context.getSystemService(
+                        Context.WIFI_SERVICE
+                    ) as? WifiManager
+                        ?: throw Exception("No se pudo obtener WifiManager")
+
+                    val wifiInfo = wifiManager.connectionInfo
+                        ?: throw Exception("No se pudo obtener la información Wi-Fi")
+
+                    val dhcpInfo = wifiManager.dhcpInfo
+
+                    val ip = wifiInfo.ipAddress
+                    val gateway = dhcpInfo?.gateway ?: 0
+
+                    LocalNetworkResult(
+                        wifiIp = if (ip != 0) {
+                            formatIp(ip)
+                        } else {
+                            "No conectado"
+                        },
+                        gatewayIp = if (gateway != 0) {
+                            formatIp(gateway)
+                        } else {
+                            "No disponible"
+                        },
+                        error = null
+                    )
+                } catch (exception: Exception) {
+                    LocalNetworkResult(
+                        wifiIp = "Error",
+                        gatewayIp = "Error",
+                        error = "Error obteniendo datos Wi-Fi: ${
+                            exception.message ?: exception.javaClass.simpleName
+                        }"
+                    )
+                }
+            }
+
+            wifiIp.value = localResult.wifiIp
+            gatewayIp.value = localResult.gatewayIp
+
+            localResult.error?.let { error ->
+                errorMessage.value = error
+            }
+
+            val publicIpResult = withContext(Dispatchers.IO) {
+                try {
+                    val result = URL("https://api.ipify.org")
+                        .readText()
+                        .trim()
+
+                    if (result.isEmpty()) {
+                        throw Exception("La respuesta estaba vacía")
+                    }
+
+                    result
+                } catch (exception: Exception) {
+                    "Error"
+                }
+            }
+
+            publicIp.value = publicIpResult
+
+            if (publicIpResult == "Error") {
+                val publicError = "Error obteniendo la IP pública. " +
+                        "Comprueba la conexión a Internet y el permiso INTERNET."
+
+                errorMessage.value = listOfNotNull(
+                    errorMessage.value,
+                    publicError
+                ).joinToString("\n")
+            }
+
+            isLoading.value = false
+        }
+    }
+
+    private fun formatIp(ip: Int): String {
+        return listOf(
+            ip and 0xff,
+            ip shr 8 and 0xff,
+            ip shr 16 and 0xff,
+            ip shr 24 and 0xff
+        ).joinToString(".")
+    }
+
+    private data class LocalNetworkResult(
+        val wifiIp: String,
+        val gatewayIp: String,
+        val error: String?
+    )
 }
