@@ -1,2 +1,2 @@
 # host-ip
-test
+A Android application that allows you to check your Wifi gateway ip
