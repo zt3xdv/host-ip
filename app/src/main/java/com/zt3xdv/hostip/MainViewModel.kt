@@ -22,6 +22,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     init {
         refresh()
     }
+    
+    fun clearError() {
+        errorMessage.value = null
+    }
+    
+    fun setError(message: String) {
+        errorMessage.value = message
+    }
 
     fun refresh() {
         if (isLoading.value) return
