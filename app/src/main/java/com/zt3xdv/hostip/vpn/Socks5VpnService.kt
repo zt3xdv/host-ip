@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import android.system.OsConstants
 import kotlinx.coroutines.*
 import java.io.IOException
 import java.net.DatagramSocket
@@ -78,8 +79,8 @@ class Socks5VpnService : VpnService() {
             builder.addDnsServer("8.8.4.4")
             builder.addRoute("0.0.0.0", 0)
             builder.setMtu(1500)
-            builder.allowFamily(AF_INET)
-            builder.allowFamily(AF_INET6)
+            builder.allowFamily(OsConstants.AF_INET)
+            builder.allowFamily(OsConstants.AF_INET6)
             
             val pfd = builder.establish() ?: return
             
