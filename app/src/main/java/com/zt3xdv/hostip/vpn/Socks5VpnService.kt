@@ -20,7 +20,7 @@ class Socks5VpnService : VpnService() {
         const val ACTION_CONNECT = "com.zt3xdv.hostip.vpn.CONNECT"
         const val ACTION_DISCONNECT = "com.zt3xdv.hostip.vpn.DISCONNECT"
         const val EXTRA_GATEWAY_IP = "gateway_ip"
-        const val SOCKS_PORT = 180
+        const val SOCKS_PORT = 1080
     }
     
     private var vpnThread: Thread? = null
