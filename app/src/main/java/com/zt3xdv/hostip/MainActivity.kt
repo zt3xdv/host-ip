@@ -92,7 +92,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Check if VPN needs permission
         checkVpnPermission()
     }
 

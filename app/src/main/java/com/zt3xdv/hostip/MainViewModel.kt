@@ -6,6 +6,7 @@ import android.net.wifi.WifiManager
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.zt3xdv.hostip.vpn.VpnManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,8 +19,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val publicIp = mutableStateOf("Loading...")
     val errorMessage = mutableStateOf<String?>(null)
     val isLoading = mutableStateOf(false)
+    val wifiConnected = mutableStateOf(false)
+    
+    val vpnManager = VpnManager(application.applicationContext)
+    
+    val autoConnect = mutableStateOf(false)
+    val autoReconnect = mutableStateOf(false)
 
     init {
+        viewModelScope.launch {
+            vpnManager.autoConnectPreference.collect { value ->
+                autoConnect.value = value
+            }
+        }
+        
+        viewModelScope.launch {
+            vpnManager.autoReconnectPreference.collect { value ->
+                autoReconnect.value = value
+            }
+        }
+        
         refresh()
     }
     
@@ -29,6 +48,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     
     fun setError(message: String) {
         errorMessage.value = message
+    }
+    
+    fun setAutoConnect(enabled: Boolean) {
+        viewModelScope.launch {
+            vpnManager.setAutoConnect(enabled)
+        }
+    }
+    
+    fun setAutoReconnect(enabled: Boolean) {
+        viewModelScope.launch {
+            vpnManager.setAutoReconnect(enabled)
+        }
+    }
+    
+    fun connectVpn() {
+        vpnManager.connectVpn(gatewayIp.value)
+    }
+    
+    fun disconnectVpn() {
+        vpnManager.disconnectVpn()
+    }
+    
+    fun toggleVpn() {
+        vpnManager.toggleVpn(gatewayIp.value)
     }
 
     fun refresh() {
@@ -56,11 +99,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val ip = wifiInfo.ipAddress
                     val gateway = dhcpInfo?.gateway ?: 0
 
+                    wifiConnected.value = ip != 0
+
                     LocalNetworkResult(
                         wifiIp = if (ip != 0) {
                             formatIp(ip)
                         } else {
-                            "No connected"
+                            "Not connected"
                         },
                         gatewayIp = if (gateway != 0) {
                             formatIp(gateway)
@@ -70,6 +115,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         error = null
                     )
                 } catch (exception: Exception) {
+                    wifiConnected.value = false
                     LocalNetworkResult(
                         wifiIp = "Error",
                         gatewayIp = "Error",
@@ -94,7 +140,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         .trim()
 
                     if (result.isEmpty()) {
-                        throw Exception("La respuesta estaba vacía")
+                        throw Exception("Empty response")
                     }
 
                     result
