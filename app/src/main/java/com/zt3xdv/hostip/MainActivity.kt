@@ -1,7 +1,9 @@
 package com.zt3xdv.hostip
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -28,8 +30,16 @@ class MainActivity : ComponentActivity() {
             viewModel.refresh()
         } else {
             viewModel.setError(
-                "Debes conceder permiso de ubicación para consultar la red Wi-Fi."
+                "You must grant location permission to query the Wi-Fi network."
             )
+        }
+    }
+
+    private val vpnLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            viewModel.connectVpn()
         }
     }
 
@@ -77,6 +87,19 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Check if VPN needs permission
+        checkVpnPermission()
+    }
+
+    private fun checkVpnPermission() {
+        val intent = VpnService.prepare(this)
+        if (intent != null && !viewModel.vpnManager.isVpnConnected.value) {
+            vpnLauncher.launch(intent)
         }
     }
 }
